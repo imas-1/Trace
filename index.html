@@ -51,43 +51,45 @@
       radial-gradient(circle at 30% 20%, rgba(62,232,181,.10), transparent 40%),
       linear-gradient(160deg,#171b25,#06070a 70%);
     display:flex;flex-direction:column;align-items:center;
-    padding-top:110px;
+    padding:52px 0 14px;
+    gap:12px;
     transition:transform .5s cubic-bezier(.2,.8,.2,1), opacity .4s ease;
     z-index:30;
   }
   .lock.unlocked{transform:translateY(-100%);opacity:0;pointer-events:none;}
-  .lock .clock{font-family:var(--serif);font-size:64px;font-weight:400;letter-spacing:-1px;}
-  .lock .date{color:var(--sub);font-size:13px;margin-top:4px;letter-spacing:.03em;}
+  .lock .timeblock{display:flex;flex-direction:column;align-items:center;flex:none;}
+  .lock .clock{font-family:var(--serif);font-size:50px;font-weight:400;letter-spacing:-1px;line-height:1;}
+  .lock .date{color:var(--sub);font-size:12px;margin-top:5px;letter-spacing:.03em;}
 
   .lock .notif{
-    margin-top:34px;width:280px;background:rgba(255,255,255,.06);
+    width:264px;background:rgba(255,255,255,.06);
     border:1px solid var(--line);backdrop-filter:blur(20px);
-    border-radius:18px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;
+    border-radius:16px;padding:9px 12px;display:flex;gap:9px;align-items:flex-start;
+    flex:none;
     animation:drop .5s cubic-bezier(.2,.8,.2,1) both;
   }
-  .lock .notif + .notif{margin-top:10px;}
   .lock .notif:nth-child(3){animation-delay:.15s;}
   .lock .notif:nth-child(4){animation-delay:.3s;}
   @keyframes drop{from{opacity:0;transform:translateY(-14px);}to{opacity:1;transform:translateY(0);}}
-  .notif .dot{width:26px;height:26px;border-radius:8px;background:var(--accent-dim);flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .notif .dot{width:24px;height:24px;border-radius:7px;background:var(--accent-dim);flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;}
   .notif .body{flex:1;min-width:0;}
-  .notif .t1{font-size:12px;color:var(--sub);display:flex;justify-content:space-between;}
-  .notif .t2{font-size:13.5px;margin-top:2px;line-height:1.35;}
+  .notif .t1{font-size:11px;color:var(--sub);display:flex;justify-content:space-between;}
+  .notif .t2{font-size:12.5px;margin-top:2px;line-height:1.32;}
 
   .lock .hint{position:absolute;bottom:34px;left:0;right:0;text-align:center;color:var(--sub);font-size:12px;letter-spacing:.05em;}
   .lock .swipebar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:3px;background:rgba(255,255,255,.35);}
 
   /* Passcode keypad */
-  .dots{display:flex;gap:14px;margin-top:26px;}
-  .dots .d{width:11px;height:11px;border-radius:50%;border:1.4px solid rgba(255,255,255,.4);}
+  .dots{display:flex;gap:14px;flex:none;}
+  .dots .d{width:10px;height:10px;border-radius:50%;border:1.4px solid rgba(255,255,255,.4);}
   .dots .d.filled{background:var(--text);border-color:var(--text);}
   .lock.shake .dots{animation:shakeit .35s;}
   @keyframes shakeit{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
-  .keypad{display:grid;grid-template-columns:repeat(3,64px);gap:14px;margin-top:30px;justify-content:center;}
-  .key{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--text);font-size:20px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .keypad{display:grid;grid-template-columns:repeat(3,56px);gap:10px;justify-content:center;flex:none;}
+  .key{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--text);font-size:18px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .key:active{background:rgba(255,255,255,.16);}
   .key.ghost{background:none;border:none;}
-  .lock .codehint{margin-top:22px;font-size:11px;color:var(--sub);text-align:center;padding:0 40px;line-height:1.4;}
+  .lock .codehint{font-size:10.5px;color:var(--sub);text-align:center;padding:0 34px;line-height:1.35;flex:none;}
 
   /* HOME */
   .home{position:absolute;inset:0;padding-top:70px;z-index:20;
@@ -228,8 +230,10 @@
 
     <!-- LOCK -->
     <div class="lock" id="lock">
-      <div class="clock">21:04</div>
-      <div class="date">Marți, 3 Februarie</div>
+      <div class="timeblock">
+        <div class="clock">21:04</div>
+        <div class="date">Marți, 3 Februarie</div>
+      </div>
       <div class="notif" data-app="messages">
         <div class="dot">✉</div>
         <div class="body"><div class="t1"><span>Mesaje</span><span>acum</span></div><div class="t2"><b>Andreea:</b> te rog nu mai suna, o rezolv singură</div></div>
@@ -690,20 +694,33 @@ document.getElementById('solveBtn').addEventListener('click', evaluateBoard);
 document.getElementById('endClose').addEventListener('click', ()=> document.getElementById('endingOverlay').classList.remove('show'));
 
 // ---------- FIT-TO-SCREEN (no scroll, phone always fully visible) ----------
+function viewportH(){
+  return (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+}
+function viewportW(){
+  return (window.visualViewport ? window.visualViewport.width : window.innerWidth);
+}
 function fitPhone(){
   const frame = document.getElementById('phoneFrame');
   const phone = document.getElementById('phone');
-  const titleH = document.querySelector('.stage h1').offsetHeight + 10; // gap
-  const availW = window.innerWidth * 0.92;
-  const availH = window.innerHeight - titleH - 16; // small margin
-  const scale = Math.min(availW / 340, availH / 700, 1);
+  const h1 = document.querySelector('.stage h1');
+  const titleH = h1.offsetHeight + 10;
+  const availW = viewportW() * 0.92;
+  const availH = viewportH() - titleH - 16;
+  const scale = Math.max(0.1, Math.min(availW / 340, availH / 700, 1));
   phone.style.transform = 'scale(' + scale + ')';
   frame.style.width = (340 * scale) + 'px';
   frame.style.height = (700 * scale) + 'px';
 }
 window.addEventListener('resize', fitPhone);
 window.addEventListener('orientationchange', fitPhone);
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', fitPhone);
+}
+window.addEventListener('load', fitPhone);
 fitPhone();
+// Safari sometimes settles chrome/toolbar size after paint — recheck a few times
+[50,150,300,600,1000].forEach(ms => setTimeout(fitPhone, ms));
 
 // ---------- SOUND & HAPTICS (lightweight, no external assets) ----------
 let audioCtx = null;
