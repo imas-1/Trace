@@ -35,8 +35,8 @@ export interface CaseNote {
 export interface CaseLocation {
   id: string;
   name: string;
-  x: number; // percentage, 0-100
-  y: number; // percentage, 0-100
+  x: number;
+  y: number;
   time: string;
   note: string;
   last: boolean;
@@ -74,6 +74,7 @@ export interface CaseEnding {
   eyebrow: string;
   title: string;
   body: string;
+  requiredLinks?: [string, string][];
 }
 
 export interface CaseData {
@@ -104,6 +105,7 @@ export interface GameSaveState {
   positions: Record<string, BoardPosition>;
   tutorialSeen: boolean;
   soundEnabled: boolean;
+  readThreadIds: string[];
   updatedAt: number;
 }
 
