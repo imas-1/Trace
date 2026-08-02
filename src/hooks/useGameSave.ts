@@ -13,15 +13,25 @@ const emptySave: GameSaveState = {
   tutorialSeen: false,
   soundEnabled: true,
   readThreadIds: [],
+  readGalleryIds: [],
+  callsSeen: false,
   updatedAt: 0
 };
+
+function backfill(s: GameSaveState): GameSaveState {
+  return {
+    ...s,
+    readThreadIds: s.readThreadIds ?? [],
+    readGalleryIds: s.readGalleryIds ?? [],
+    callsSeen: s.callsSeen ?? false
+  };
+}
 
 function readLocal(): GameSaveState | null {
   try {
     const raw = localStorage.getItem(LOCAL_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as GameSaveState;
-    return { ...parsed, readThreadIds: parsed.readThreadIds ?? [] };
+    return backfill(JSON.parse(raw) as GameSaveState);
   } catch {
     return null;
   }
@@ -57,8 +67,7 @@ export function useGameSave() {
         try {
           const snap = await get(ref(rtdb, savePath(user.uid)));
           if (!cancelled && snap.exists()) {
-            const remoteRaw = snap.val() as GameSaveState;
-            const remote: GameSaveState = { ...remoteRaw, readThreadIds: remoteRaw.readThreadIds ?? [] };
+            const remote = backfill(snap.val() as GameSaveState);
             const local = readLocal();
             const winner = !local || remote.updatedAt > local.updatedAt ? remote : local;
             setSave(winner);
