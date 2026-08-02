@@ -13,14 +13,40 @@ interface Props {
   sound: SoundKit;
 }
 
+const MAX_LINKS_PER_PIN = 3;
+const MAX_HISTORY = 10;
+
 export function BoardApp({ items, endings, links, positions, onLinksChange, onPositionsChange, sound }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [ending, setEnding] = useState<CaseEnding | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const historyRef = useRef<BoardLink[][]>([]);
+  const [historyLen, setHistoryLen] = useState(0);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [dragPositions, setDragPositions] = useState<Record<string, BoardPosition>>({});
   const dragState = useRef<{ id: string; startX: number; startY: number; origin: BoardPosition; moved: boolean } | null>(null);
 
   function posOf(id: string, fallback: { x: number; y: number }): BoardPosition {
     return dragPositions[id] ?? positions[id] ?? { x: fallback.x, y: fallback.y };
+  }
+
+  function showToast(msg: string) {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 1600);
+  }
+
+  function pushHistory() {
+    historyRef.current = [...historyRef.current.slice(-(MAX_HISTORY - 1)), links];
+    setHistoryLen(historyRef.current.length);
+  }
+  function undo() {
+    const prev = historyRef.current.pop();
+    setHistoryLen(historyRef.current.length);
+    if (prev === undefined) return;
+    onLinksChange(prev);
+    sound.close();
   }
 
   function handlePointerDown(e: React.PointerEvent, item: BoardItem) {
@@ -60,7 +86,12 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [positions]);
 
+  function linkCountFor(id: string): number {
+    return links.filter((l) => l.a === id || l.b === id).length;
+  }
+
   function removeLink(link: BoardLink) {
+    pushHistory();
     onLinksChange(links.filter((l) => l !== link));
     sound.close();
   }
@@ -72,9 +103,20 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
     } else if (selected === id) {
       setSelected(null);
     } else {
-      onLinksChange([...links, { a: selected, b: id }]);
+      if (linkCountFor(selected) >= MAX_LINKS_PER_PIN || linkCountFor(id) >= MAX_LINKS_PER_PIN) {
+        showToast(`Maxim ${MAX_LINKS_PER_PIN} conexiuni per element`);
+        sound.close();
+        setSelected(null);
+        return;
+      }
+      const newLink = { a: selected, b: id };
+      pushHistory();
+      onLinksChange([...links, newLink]);
       setSelected(null);
       sound.clue();
+      if (navigator.vibrate) {
+        navigator.vibrate(isKeyLink(newLink) ? [12, 30, 12, 30, 24] : [15, 20, 15]);
+      }
     }
   }
 
@@ -119,10 +161,21 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
     );
   }
 
+  const isRealEnding = ending ? ending.id !== 'ending_wrong' : false;
+
   return (
     <div className="-mx-4 -mb-[30px] -mt-3.5 flex h-[calc(100%+56px)] flex-col">
-      <div className="px-4 pb-2.5 pt-3.5 text-[11.5px] leading-snug text-sub">
-        Trage pionezele. Atinge două, pe rând, ca să le <b className="text-text">conectezi</b>. Atinge un fir ca să-l <b className="text-text">ștergi</b>. Ține apăsat + trage pentru mutare.
+      <div className="flex items-start justify-between gap-2 px-4 pb-2.5 pt-3.5 text-[11.5px] leading-snug text-sub">
+        <div>
+          Trage pionezele. Atinge două, pe rând, ca să le <b className="text-text">conectezi</b> (max {MAX_LINKS_PER_PIN}/element). Atinge un fir ca să-l <b className="text-text">ștergi</b>.
+        </div>
+        <button
+          className="flex-none rounded-lg border border-line px-2 py-1 text-[10.5px] text-sub disabled:opacity-30"
+          onClick={undo}
+          disabled={historyLen === 0}
+        >
+          ↺ Anulează
+        </button>
       </div>
       <div className="relative flex-1 overflow-auto">
         <div className="relative h-[520px] w-[640px]">
@@ -159,6 +212,19 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
       </div>
 
       <AnimatePresence>
+        {toast && (
+          <motion.div
+            className="pointer-events-none absolute left-1/2 top-3 z-[95] -translate-x-1/2 rounded-full bg-black/85 px-3.5 py-1.5 text-[11.5px] text-text"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {ending && (
           <motion.div
             className="absolute inset-0 z-[90] flex items-center justify-center bg-black/90 p-7 backdrop-blur-md"
@@ -166,8 +232,15 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div className="text-center">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-warn">{ending.eyebrow}</div>
+            <motion.div
+              className="text-center"
+              initial={{ scale: 0.92 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+            >
+              <div className={`text-[10px] uppercase tracking-[0.18em] ${isRealEnding ? 'text-accent' : 'text-warn'}`}>
+                {isRealEnding ? '✓ ' : ''}{ending.eyebrow}
+              </div>
               <h2 className="my-2 font-serif text-[22px]">{ending.title}</h2>
               <p className="text-[13px] leading-relaxed text-sub">{ending.body}</p>
               <button
@@ -176,7 +249,7 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
               >
                 Înapoi la board
               </button>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
