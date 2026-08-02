@@ -13,80 +13,37 @@ export const semnalPierdut: CaseData = {
       'Andreea, 22 de ani, a dispărut acum câteva zile. Telefonul ei a fost găsit abandonat. Investighează-l și trage propriile concluzii.'
   },
   threads: [
-    {
-      id: 't1',
-      name: 'Mama',
-      initials: 'M',
-      messages: [
-        { from: 'them', text: 'Andreea, sună-mă când ajungi la cămin.' },
-        { from: 'me', text: 'Da mami, ajung în 20 min.' },
-        { from: 'them', text: 'Nu ai mai răspuns de 2 zile, sunt îngrijorată.', clue: true }
-      ]
-    },
-    {
-      id: 't2',
-      name: 'Radu (coleg)',
-      initials: 'R',
-      messages: [
-        { from: 'them', text: 'Ai plecat de la petrecere fără să zici nimic.' },
-        { from: 'them', text: 'Cine era tipul cu care vorbeai afară?' },
-        { from: 'me', text: 'Nu vreau să vorbesc despre asta acum.' }
-      ]
-    },
-    {
-      id: 't3',
-      name: 'Necunoscut',
-      initials: '?',
-      messages: [
-        { from: 'them', text: 'Știu ce ai făcut. Mai avem de vorbit.', clue: true },
-        { from: 'me', text: 'Cine ești? Nu te cunosc.' },
-        { from: 'them', text: 'O să afli curând. Fii la locul obișnuit, vineri.', clue: true }
-      ]
-    },
-    {
-      id: 't4',
-      name: 'Ioana (colegă de cameră)',
-      initials: 'I',
-      messages: [
-        { from: 'them', text: 'Ai uitat încărcătorul la mine, ți-l aduc mâine.' },
-        { from: 'them', text: 'De ce nu ai dormit acasă azi noapte?' },
-        { from: 'me', text: 'Am stat la o prietenă, nu-ți face griji.' },
-        { from: 'them', text: 'Ai fost ciudată în ultima săptămână. S-a întâmplat ceva?', clue: true }
-      ]
-    },
-    {
-      id: 't5',
-      name: 'Tata',
-      initials: 'T',
-      messages: [
-        { from: 'them', text: 'Ai vorbit cu mama ta? E foarte îngrijorată.' },
-        { from: 'me', text: 'Sunt bine, doar am nevoie de puțin spațiu acum.' },
-        { from: 'them', text: 'Dacă ai nevoie de bani pentru orice, sună-mă direct pe mine, nu pe altcineva.', clue: true }
-      ]
-    }
+    { id: 't1', name: 'Mama', initials: 'M', messages: [
+      { from: 'them', text: 'Andreea, sună-mă când ajungi la cămin.' },
+      { from: 'me', text: 'Da mami, ajung în 20 min.' },
+      { from: 'them', text: 'Nu ai mai răspuns de 2 zile, sunt îngrijorată.', clue: true }
+    ] },
+    { id: 't2', name: 'Radu (coleg)', initials: 'R', messages: [
+      { from: 'them', text: 'Ai plecat de la petrecere fără să zici nimic.' },
+      { from: 'them', text: 'Cine era tipul cu care vorbeai afară?' },
+      { from: 'me', text: 'Nu vreau să vorbesc despre asta acum.' }
+    ] },
+    { id: 't3', name: 'Necunoscut', initials: '?', messages: [
+      { from: 'them', text: 'Știu ce ai făcut. Mai avem de vorbit.', clue: true },
+      { from: 'me', text: 'Cine ești? Nu te cunosc.' },
+      { from: 'them', text: 'O să afli curând. Fii la locul obișnuit, vineri.', clue: true }
+    ] },
+    { id: 't4', name: 'Ioana (colegă de cameră)', initials: 'I', messages: [
+      { from: 'them', text: 'Ai uitat încărcătorul la mine, ți-l aduc mâine.' },
+      { from: 'them', text: 'De ce nu ai dormit acasă azi noapte?' },
+      { from: 'me', text: 'Am stat la o prietenă, nu-ți face griji.' },
+      { from: 'them', text: 'Ai fost ciudată în ultima săptămână. S-a întâmplat ceva?', clue: true }
+    ] },
+    { id: 't5', name: 'Tata', initials: 'T', messages: [
+      { from: 'them', text: 'Ai vorbit cu mama ta? E foarte îngrijorată.' },
+      { from: 'me', text: 'Sunt bine, doar am nevoie de puțin spațiu acum.' },
+      { from: 'them', text: 'Dacă ai nevoie de bani pentru orice, sună-mă direct pe mine, nu pe altcineva.', clue: true }
+    ] }
   ],
   gallery: [
-    {
-      id: 'g1',
-      img: 'https://picsum.photos/seed/petrecere1/500/500',
-      label: 'Foto grup — petrecere, 28 ian',
-      note: 'Se văd 6 persoane. Unul din fundal poartă o geacă identică cu cea descrisă de coleg de cameră.',
-      meta: { Loc: 'Str. Copou 14', Ora: '23:41', Metadate: 'GPS activ' }
-    },
-    {
-      id: 'g2',
-      img: 'https://picsum.photos/seed/banking1/500/500',
-      label: 'Captură bancară',
-      note: 'Transfer de 2.000 RON către un cont necunoscut, cu o zi înainte de dispariție.',
-      meta: { Loc: '—', Ora: '14:02', Metadate: 'Editat de 2 ori' }
-    },
-    {
-      id: 'g3',
-      img: 'https://picsum.photos/seed/cafenea1/500/500',
-      label: 'Selfie — cafenea',
-      note: 'Pare normal, dar reflexia din geam arată o a doua persoană care o urmărește.',
-      meta: { Loc: 'Cafeneaua Nomad', Ora: '09:15', Metadate: 'Locație suprascrisă' }
-    }
+    { id: 'g1', img: 'https://picsum.photos/seed/petrecere1/500/500', label: 'Foto grup — petrecere, 28 ian', note: 'Se văd 6 persoane. Unul din fundal poartă o geacă identică cu cea descrisă de coleg de cameră.', meta: { Loc: 'Str. Copou 14', Ora: '23:41', Metadate: 'GPS activ' } },
+    { id: 'g2', img: 'https://picsum.photos/seed/banking1/500/500', label: 'Captură bancară', note: 'Transfer de 2.000 RON către un cont necunoscut, cu o zi înainte de dispariție.', meta: { Loc: '—', Ora: '14:02', Metadate: 'Editat de 2 ori' } },
+    { id: 'g3', img: 'https://picsum.photos/seed/cafenea1/500/500', label: 'Selfie — cafenea', note: 'Pare normal, dar reflexia din geam arată o a doua persoană care o urmărește.', meta: { Loc: 'Cafeneaua Nomad', Ora: '09:15', Metadate: 'Locație suprascrisă' } }
   ],
   notes: [
     { t: 'Listă rezolvare teză', b: 'Cap 1-3 gata. Mai trebuie bibliografie.' },
@@ -120,33 +77,10 @@ export const semnalPierdut: CaseData = {
     { id: 'p10', type: 'Apel', text: 'Apel ratat — mama, a doua zi', x: 520, y: 430 }
   ],
   endings: [
-    {
-      id: 'ending_radu',
-      check: (links) => hasLink(links, 'p2', 'p5') && hasLink(links, 'p5', 'p7'),
-      eyebrow: 'Final — Concluzie corectă',
-      title: 'Datoria ascunsă',
-      body: 'Ai legat mesajul lui Radu de transferul bancar și de notița despre bani. Andreea făcea rost de bani pentru Radu și a fugit ca să scape de o datorie, nu răpită. S-a ascuns la o verișoară, temându-se să contacteze pe cineva.'
-    },
-    {
-      id: 'ending_stalker',
-      check: (links) => hasLink(links, 'p3', 'p6') && hasLink(links, 'p6', 'p8'),
-      eyebrow: 'Final — Concluzie corectă',
-      title: 'Urmăritorul',
-      body: 'Ai legat mesajul necunoscutului de reflexia din fotografie și de notița despre contul spart. Cineva o urmărea sistematic, i-a compromis conturile, iar dispariția e legată de amenințările primite.'
-    },
-    {
-      id: 'ending_confrontation',
-      check: (links) => hasLink(links, 'p3', 'p9') && hasLink(links, 'p9', 'p10'),
-      eyebrow: 'Final — Concluzie corectă',
-      title: 'Întâlnirea din umbră',
-      body: 'Ai legat mesajul necunoscutului de apelurile ratate din seara dispariției și de apelul ratat al mamei a doua zi. Andreea a fost sunată insistent înainte să dispară, apoi orice contact a încetat brusc — un semn clar al unei confruntări planificate, nu al unei fugi voluntare.'
-    },
-    {
-      id: 'ending_wrong',
-      check: () => true,
-      eyebrow: 'Final — Concluzie neconfirmată',
-      title: 'Prea puține dovezi',
-      body: 'Conexiunile tale nu leagă încă un mesaj de amenințare de o dovadă fizică (foto, notiță sau apel). Cazul rămâne deschis — revino la board și încearcă alte legături între indicii.'
-    }
+    { id: 'ending_radu', check: (links) => hasLink(links, 'p2', 'p5') && hasLink(links, 'p5', 'p7'), eyebrow: 'Final — Concluzie corectă', title: 'Datoria ascunsă', body: 'Ai legat mesajul lui Radu de transferul bancar și de notița despre bani. Andreea făcea rost de bani pentru Radu și a fugit ca să scape de o datorie, nu răpită. S-a ascuns la o verișoară, temându-se să contacteze pe cineva.', requiredLinks: [['p2', 'p5'], ['p5', 'p7']] },
+    { id: 'ending_stalker', check: (links) => hasLink(links, 'p3', 'p6') && hasLink(links, 'p6', 'p8'), eyebrow: 'Final — Concluzie corectă', title: 'Urmăritorul', body: 'Ai legat mesajul necunoscutului de reflexia din fotografie și de notița despre contul spart. Cineva o urmărea sistematic, i-a compromis conturile, iar dispariția e legată de amenințările primite.', requiredLinks: [['p3', 'p6'], ['p6', 'p8']] },
+    { id: 'ending_confrontation', check: (links) => hasLink(links, 'p3', 'p9') && hasLink(links, 'p9', 'p10'), eyebrow: 'Final — Concluzie corectă', title: 'Întâlnirea din umbră', body: 'Ai legat mesajul necunoscutului de apelurile ratate din seara dispariției și de apelul ratat al mamei a doua zi. Andreea a fost sunată insistent înainte să dispară, apoi orice contact a încetat brusc — un semn clar al unei confruntări planificate, nu al unei fugi voluntare.', requiredLinks: [['p3', 'p9'], ['p9', 'p10']] },
+    { id: 'ending_hidden', check: (links) => hasLink(links, 'p4', 'p6') && hasLink(links, 'p4', 'p9'), eyebrow: 'Final secret — Concluzie corectă', title: 'Chipul din mulțime', body: 'Ai legat fotografia de grup de reflexia suspectă și de apelurile ratate din seara dispariției. Persoana cu geaca din fundalul fotografiei de la petrecere este aceeași care a sunat-o insistent — cineva din cercul ei apropiat, nu un străin. Ai găsit legătura pe care puțini o observă la prima trecere prin dosar.', requiredLinks: [['p4', 'p6'], ['p4', 'p9']] },
+    { id: 'ending_wrong', check: () => true, eyebrow: 'Final — Concluzie neconfirmată', title: 'Prea puține dovezi', body: 'Conexiunile tale nu leagă încă un mesaj de amenințare de o dovadă fizică (foto, notiță sau apel). Cazul rămâne deschis — revino la board și încearcă alte legături între indicii.' }
   ]
 };
