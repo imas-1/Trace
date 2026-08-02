@@ -5,9 +5,11 @@ import type { SoundKit } from '@/hooks/useSound';
 interface Props {
   threads: CaseThread[];
   sound: SoundKit;
+  readThreadIds: string[];
+  onOpenThread: (id: string) => void;
 }
 
-export function MessagesApp({ threads, sound }: Props) {
+export function MessagesApp({ threads, sound, readThreadIds, onOpenThread }: Props) {
   const [active, setActive] = useState<CaseThread | null>(null);
 
   useEffect(() => {
@@ -43,14 +45,16 @@ export function MessagesApp({ threads, sound }: Props) {
     <div>
       {threads.map((th) => {
         const last = th.messages[th.messages.length - 1];
+        const unread = !readThreadIds.includes(th.id);
         return (
           <div
             key={th.id}
             className="flex cursor-pointer items-center gap-2.5 border-b border-line px-1 py-2.5"
-            onClick={() => { sound.tap(); setActive(th); }}
+            onClick={() => { sound.tap(); setActive(th); onOpenThread(th.id); }}
           >
-            <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-gradient-to-br from-[#3a4152] to-[#1c202a] text-sm text-sub">
+            <div className="relative flex h-10 w-10 flex-none items-center justify-center rounded-full bg-gradient-to-br from-[#3a4152] to-[#1c202a] text-sm text-sub">
               {th.initials}
+              {unread && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0c0e13] bg-accent" />}
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold">{th.name}</div>
