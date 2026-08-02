@@ -17,6 +17,7 @@ interface Props {
   save: GameSaveState;
   onSaveChange: (next: GameSaveState) => void;
   onReset: () => void;
+  onHelp: () => void;
   sound: SoundKit;
 }
 
@@ -29,7 +30,7 @@ function useClock(): string {
   return label;
 }
 
-export function PhoneShell({ caseData, save, onSaveChange, onReset, sound }: Props) {
+export function PhoneShell({ caseData, save, onSaveChange, onReset, onHelp, sound }: Props) {
   const [openApp, setOpenApp] = useState<AppId | null>(null);
   const clock = useClock();
 
@@ -45,6 +46,12 @@ export function PhoneShell({ caseData, save, onSaveChange, onReset, sound }: Pro
     sound.close();
     setOpenApp(null);
   }
+  function handleOpenThread(id: string) {
+    if (save.readThreadIds.includes(id)) return;
+    onSaveChange({ ...save, readThreadIds: [...save.readThreadIds, id], updatedAt: Date.now() });
+  }
+
+  const unreadMessages = caseData.threads.filter((t) => !save.readThreadIds.includes(t.id)).length;
 
   const appTitles: Record<AppId, string> = {
     messages: 'Mesaje',
@@ -75,10 +82,26 @@ export function PhoneShell({ caseData, save, onSaveChange, onReset, sound }: Pro
         clockLabel={clock}
       />
 
-      {save.unlocked && <HomeScreen caseData={caseData} onOpenApp={handleOpenApp} linksCount={save.links.length} />}
+      {save.unlocked && (
+        <div
+          className="transition-all duration-300"
+          style={{
+            transform: openApp ? 'scale(0.96)' : 'scale(1)',
+            opacity: openApp ? 0.5 : 1
+          }}
+        >
+          <HomeScreen
+            caseData={caseData}
+            onOpenApp={handleOpenApp}
+            linksCount={save.links.length}
+            unreadMessages={unreadMessages}
+            onHelp={onHelp}
+          />
+        </div>
+      )}
 
       <AppScreen title={appTitles.messages} open={openApp === 'messages'} onBack={handleCloseApp}>
-        <MessagesApp threads={caseData.threads} sound={sound} />
+        <MessagesApp threads={caseData.threads} sound={sound} readThreadIds={save.readThreadIds} onOpenThread={handleOpenThread} />
       </AppScreen>
       <AppScreen title={appTitles.gallery} open={openApp === 'gallery'} onBack={handleCloseApp}>
         <GalleryApp gallery={caseData.gallery} />
