@@ -22,10 +22,12 @@ interface Props {
   onOpenApp: (id: AppId) => void;
   linksCount: number;
   unreadMessages: number;
+  unreadGallery: number;
+  unreadCalls: number;
   onHelp: () => void;
 }
 
-export function HomeScreen({ caseData, onOpenApp, linksCount, unreadMessages, onHelp }: Props) {
+export function HomeScreen({ caseData, onOpenApp, linksCount, unreadMessages, unreadGallery, unreadCalls, onHelp }: Props) {
   const totalPins = caseData.board.length;
   const progressPct = totalPins > 0 ? Math.min(100, Math.round((linksCount / totalPins) * 100)) : 0;
 
@@ -65,7 +67,13 @@ export function HomeScreen({ caseData, onOpenApp, linksCount, unreadMessages, on
 
       <div className="mt-[22px] grid grid-cols-3 gap-x-[18px] gap-y-[22px] px-6">
         {APPS.map((app) => {
-          const badge = app.id === 'messages' && unreadMessages > 0 ? unreadMessages : undefined;
+          const unreadByApp: Partial<Record<AppId, number>> = {
+            messages: unreadMessages,
+            gallery: unreadGallery,
+            calls: unreadCalls
+          };
+          const count = unreadByApp[app.id] ?? 0;
+          const badge = count > 0 ? count : undefined;
           return (
             <button key={app.id} className="flex flex-col items-center gap-1.5" onClick={() => onOpenApp(app.id)}>
               <div
