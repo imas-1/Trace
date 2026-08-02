@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BoardItem, BoardLink, BoardPosition, CaseEnding } from '@/types';
 import type { SoundKit } from '@/hooks/useSound';
@@ -16,10 +16,14 @@ interface Props {
 export function BoardApp({ items, endings, links, positions, onLinksChange, onPositionsChange, sound }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [ending, setEnding] = useState<CaseEnding | null>(null);
+  // Live position overrides while a pin is being dragged. Kept purely local
+  // (no parent callback, no persist/Firebase write) so dragging stays cheap;
+  // only the final position is committed to the save on pointer-up.
+  const [dragPositions, setDragPositions] = useState<Record<string, BoardPosition>>({});
   const dragState = useRef<{ id: string; startX: number; startY: number; origin: BoardPosition; moved: boolean } | null>(null);
 
   function posOf(id: string, fallback: { x: number; y: number }): BoardPosition {
-    return positions[id] ?? { x: fallback.x, y: fallback.y };
+    return dragPositions[id] ?? positions[id] ?? { x: fallback.x, y: fallback.y };
   }
 
   function handlePointerDown(e: React.PointerEvent, item: BoardItem) {
@@ -32,12 +36,43 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
     const dx = e.clientX - d.startX;
     const dy = e.clientY - d.startY;
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) d.moved = true;
-    onPositionsChange({ ...positions, [d.id]: { x: d.origin.x + dx, y: d.origin.y + dy } });
+    // Local-only update while dragging — no save/network write per frame.
+    setDragPositions((prev) => ({ ...prev, [d.id]: { x: d.origin.x + dx, y: d.origin.y + dy } }));
   }
   function handlePointerUp(item: BoardItem) {
     const d = dragState.current;
     dragState.current = null;
-    if (d && !d.moved) selectPin(item.id);
+    if (d && d.moved) {
+      // Drag finished — commit the single final position to the save,
+      // then drop the local override (the parent's `positions` prop now
+      // carries the same value on the next render).
+      const finalPos = dragPositions[d.id];
+      if (finalPos) {
+        onPositionsChange({ ...positions, [d.id]: finalPos });
+        setDragPositions((prev) => {
+          const next = { ...prev };
+          delete next[d.id];
+          return next;
+        });
+      }
+    } else if (d) {
+      selectPin(item.id);
+    }
+  }
+
+  // Safety net: if progress gets reset externally (Settings → "Resetează
+  // progresul") while nothing is being dragged, drop any leftover local
+  // overrides so pins don't appear stuck at their pre-reset position.
+  useEffect(() => {
+    if (!dragState.current && Object.keys(positions).length === 0 && Object.keys(dragPositions).length > 0) {
+      setDragPositions({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [positions]);
+
+  function removeLink(link: BoardLink) {
+    onLinksChange(links.filter((l) => l !== link));
+    sound.close();
   }
 
   function selectPin(id: string) {
@@ -70,17 +105,23 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
     // pin card is 118px wide; approximate center offset for a clean line anchor
     const ax = pa.x + 59, ay = pa.y + 24;
     const bx = pb.x + 59, by = pb.y + 24;
-    return <line key={idx} x1={ax} y1={ay} x2={bx} y2={by} stroke="#e8763e" strokeWidth={1.6} opacity={0.8} />;
+    return (
+      <g key={idx} className="pointer-events-auto cursor-pointer" onClick={() => removeLink(link)}>
+        {/* wide transparent line = easy tap target on mobile, without widening the visible thread */}
+        <line x1={ax} y1={ay} x2={bx} y2={by} stroke="transparent" strokeWidth={16} />
+        <line x1={ax} y1={ay} x2={bx} y2={by} stroke="#e8763e" strokeWidth={1.6} opacity={0.8} />
+      </g>
+    );
   }
 
   return (
     <div className="-mx-4 -mb-[30px] -mt-3.5 flex h-[calc(100%+56px)] flex-col">
       <div className="px-4 pb-2.5 pt-3.5 text-[11.5px] leading-snug text-sub">
-        Trage pionezele. Atinge două, pe rând, ca să le <b className="text-text">conectezi</b>. Ține apăsat + trage pentru mutare.
+        Trage pionezele. Atinge două, pe rând, ca să le <b className="text-text">conectezi</b>. Atinge un fir ca să-l <b className="text-text">ștergi</b>. Ține apăsat + trage pentru mutare.
       </div>
       <div className="relative flex-1 overflow-auto">
         <div className="relative h-[520px] w-[640px]">
-          <svg className="pointer-events-none absolute inset-0 h-full w-full">
+          <svg className="absolute inset-0 h-full w-full" style={{ pointerEvents: 'none' }}>
             {links.map((l, i) => lineFor(l, i))}
           </svg>
           {items.map((item) => {
