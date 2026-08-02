@@ -10,11 +10,13 @@ import { NotesApp } from '@/components/apps/NotesApp';
 import { BoardApp } from '@/components/apps/BoardApp';
 import { MapsApp } from '@/components/apps/MapsApp';
 import { CallsApp } from '@/components/apps/CallsApp';
+import { SettingsApp } from '@/components/apps/SettingsApp';
 
 interface Props {
   caseData: CaseData;
   save: GameSaveState;
   onSaveChange: (next: GameSaveState) => void;
+  onReset: () => void;
   sound: SoundKit;
 }
 
@@ -27,7 +29,7 @@ function useClock(): string {
   return label;
 }
 
-export function PhoneShell({ caseData, save, onSaveChange, sound }: Props) {
+export function PhoneShell({ caseData, save, onSaveChange, onReset, sound }: Props) {
   const [openApp, setOpenApp] = useState<AppId | null>(null);
   const clock = useClock();
 
@@ -50,7 +52,8 @@ export function PhoneShell({ caseData, save, onSaveChange, sound }: Props) {
     notes: 'Notițe',
     board: 'Board detectiv',
     maps: 'Hărți — istoric locații',
-    calls: 'Apeluri recente'
+    calls: 'Apeluri recente',
+    settings: 'Setări'
   };
 
   return (
@@ -72,7 +75,7 @@ export function PhoneShell({ caseData, save, onSaveChange, sound }: Props) {
         clockLabel={clock}
       />
 
-      {save.unlocked && <HomeScreen caseData={caseData} onOpenApp={handleOpenApp} />}
+      {save.unlocked && <HomeScreen caseData={caseData} onOpenApp={handleOpenApp} linksCount={save.links.length} />}
 
       <AppScreen title={appTitles.messages} open={openApp === 'messages'} onBack={handleCloseApp}>
         <MessagesApp threads={caseData.threads} sound={sound} />
@@ -99,6 +102,13 @@ export function PhoneShell({ caseData, save, onSaveChange, sound }: Props) {
       </AppScreen>
       <AppScreen title={appTitles.calls} open={openApp === 'calls'} onBack={handleCloseApp}>
         <CallsApp calls={caseData.calls} />
+      </AppScreen>
+      <AppScreen title={appTitles.settings} open={openApp === 'settings'} onBack={handleCloseApp}>
+        <SettingsApp
+          soundEnabled={save.soundEnabled}
+          onToggleSound={() => onSaveChange({ ...save, soundEnabled: !save.soundEnabled, updatedAt: Date.now() })}
+          onReset={onReset}
+        />
       </AppScreen>
     </div>
   );
