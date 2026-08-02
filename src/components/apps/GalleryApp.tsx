@@ -3,9 +3,11 @@ import type { GalleryItem } from '@/types';
 
 interface Props {
   gallery: GalleryItem[];
+  readIds: string[];
+  onOpenItem: (id: string) => void;
 }
 
-export function GalleryApp({ gallery }: Props) {
+export function GalleryApp({ gallery, readIds, onOpenItem }: Props) {
   const [active, setActive] = useState<GalleryItem | null>(null);
   const [zoomed, setZoomed] = useState(false);
   const lastTap = useRef(0);
@@ -29,8 +31,6 @@ export function GalleryApp({ gallery }: Props) {
           ‹ Galerie
         </button>
         <div className="mb-3 overflow-hidden rounded-2xl">
-          {/* Zoom is intentionally allowed ONLY here — double-tap toggles scale.
-              Page-level pinch-zoom is disabled globally via the viewport meta tag. */}
           <img
             src={active.img}
             alt={active.label}
@@ -54,17 +54,25 @@ export function GalleryApp({ gallery }: Props) {
 
   return (
     <div className="grid grid-cols-3 gap-1.5">
-      {gallery.map((g) => (
-        <div key={g.id} className="relative aspect-square cursor-pointer overflow-hidden rounded-lg" onClick={() => setActive(g)}>
-          <img src={g.img} alt="" className="h-full w-full object-cover" />
+      {gallery.map((g) => {
+        const unread = !readIds.includes(g.id);
+        return (
           <div
-            className="absolute inset-x-0 bottom-0 px-1.5 pb-1 pt-1 text-[9px] leading-tight text-white"
-            style={{ background: 'linear-gradient(to top, rgba(0,0,0,.75), transparent)' }}
+            key={g.id}
+            className="relative aspect-square cursor-pointer overflow-hidden rounded-lg"
+            onClick={() => { setActive(g); onOpenItem(g.id); }}
           >
-            {g.label}
+            <img src={g.img} alt="" className="h-full w-full object-cover" />
+            {unread && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border border-black/40 bg-accent" />}
+            <div
+              className="absolute inset-x-0 bottom-0 px-1.5 pb-1 pt-1 text-[9px] leading-tight text-white"
+              style={{ background: 'linear-gradient(to top, rgba(0,0,0,.75), transparent)' }}
+            >
+              {g.label}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
