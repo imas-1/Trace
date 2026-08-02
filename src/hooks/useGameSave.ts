@@ -11,6 +11,7 @@ const emptySave: GameSaveState = {
   links: [],
   positions: {},
   tutorialSeen: false,
+  soundEnabled: true,
   updatedAt: 0
 };
 
