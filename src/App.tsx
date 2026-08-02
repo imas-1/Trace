@@ -8,13 +8,14 @@ import { TutorialModal } from '@/components/TutorialModal';
 import { PhoneShell } from '@/components/PhoneShell';
 
 export default function App() {
-  const { save, persist, loaded } = useGameSave();
+  const { save, persist, loaded, cloudAvailable } = useGameSave();
   const sound = useSound(save.soundEnabled ?? true);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const scale = useFitScreen(titleRef);
 
   const [menuVisible, setMenuVisible] = useState(true);
   const [tutorialVisible, setTutorialVisible] = useState(false);
+  const [cloudNoticeDismissed, setCloudNoticeDismissed] = useState(false);
 
   function startCase() {
     setMenuVisible(false);
@@ -27,15 +28,24 @@ export default function App() {
     if (!save.tutorialSeen) persist({ ...save, tutorialSeen: true, updatedAt: Date.now() });
   }
   function resetProgress() {
-    persist({ unlocked: false, links: [], positions: {}, tutorialSeen: true, soundEnabled: save.soundEnabled, updatedAt: Date.now() });
+    persist({
+      unlocked: false,
+      links: [],
+      positions: {},
+      tutorialSeen: true,
+      soundEnabled: save.soundEnabled,
+      readThreadIds: [],
+      updatedAt: Date.now()
+    });
   }
 
-  // Auto-show tutorial on first-ever visit, once the save has loaded
   const autoShown = useRef(false);
   if (loaded && !save.tutorialSeen && !autoShown.current) {
     autoShown.current = true;
     if (!tutorialVisible) setTutorialVisible(true);
   }
+
+  const showCloudNotice = loaded && !cloudAvailable && !cloudNoticeDismissed && !menuVisible;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-[#05060a] p-4">
@@ -46,9 +56,24 @@ export default function App() {
         <h1 ref={titleRef} className="flex-none font-serif text-[15px] uppercase tracking-[0.14em] text-sub">
           {semnalPierdut.title} · Caz demo
         </h1>
+        {showCloudNotice && (
+          <div className="flex w-[300px] items-center justify-between gap-2 rounded-xl border border-line bg-white/[0.04] px-3 py-2 text-[11px] leading-snug text-sub">
+            <span>Mod local — progresul se salvează doar pe acest dispozitiv.</span>
+            <button className="flex-none text-sub/70" onClick={() => setCloudNoticeDismissed(true)} aria-label="Închide">
+              ✕
+            </button>
+          </div>
+        )}
         <div style={{ width: 340 * scale, height: 700 * scale }}>
           <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: 340, height: 700 }}>
-            <PhoneShell caseData={semnalPierdut} save={save} onSaveChange={persist} onReset={resetProgress} sound={sound} />
+            <PhoneShell
+              caseData={semnalPierdut}
+              save={save}
+              onSaveChange={persist}
+              onReset={resetProgress}
+              onHelp={openTutorial}
+              sound={sound}
+            />
           </div>
         </div>
       </div>
