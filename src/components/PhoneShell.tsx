@@ -41,6 +41,9 @@ export function PhoneShell({ caseData, save, onSaveChange, onReset, onHelp, soun
   function handleOpenApp(id: AppId) {
     sound.open();
     setOpenApp(id);
+    if (id === 'calls' && !save.callsSeen) {
+      onSaveChange({ ...save, callsSeen: true, updatedAt: Date.now() });
+    }
   }
   function handleCloseApp() {
     sound.close();
@@ -50,8 +53,14 @@ export function PhoneShell({ caseData, save, onSaveChange, onReset, onHelp, soun
     if (save.readThreadIds.includes(id)) return;
     onSaveChange({ ...save, readThreadIds: [...save.readThreadIds, id], updatedAt: Date.now() });
   }
+  function handleOpenGalleryItem(id: string) {
+    if (save.readGalleryIds.includes(id)) return;
+    onSaveChange({ ...save, readGalleryIds: [...save.readGalleryIds, id], updatedAt: Date.now() });
+  }
 
   const unreadMessages = caseData.threads.filter((t) => !save.readThreadIds.includes(t.id)).length;
+  const unreadGallery = caseData.gallery.filter((g) => !save.readGalleryIds.includes(g.id)).length;
+  const unreadCalls = !save.callsSeen ? caseData.calls.filter((c) => c.clue).length : 0;
 
   const appTitles: Record<AppId, string> = {
     messages: 'Mesaje',
@@ -95,6 +104,8 @@ export function PhoneShell({ caseData, save, onSaveChange, onReset, onHelp, soun
             onOpenApp={handleOpenApp}
             linksCount={save.links.length}
             unreadMessages={unreadMessages}
+            unreadGallery={unreadGallery}
+            unreadCalls={unreadCalls}
             onHelp={onHelp}
           />
         </div>
@@ -104,7 +115,7 @@ export function PhoneShell({ caseData, save, onSaveChange, onReset, onHelp, soun
         <MessagesApp threads={caseData.threads} sound={sound} readThreadIds={save.readThreadIds} onOpenThread={handleOpenThread} />
       </AppScreen>
       <AppScreen title={appTitles.gallery} open={openApp === 'gallery'} onBack={handleCloseApp}>
-        <GalleryApp gallery={caseData.gallery} />
+        <GalleryApp gallery={caseData.gallery} readIds={save.readGalleryIds} onOpenItem={handleOpenGalleryItem} />
       </AppScreen>
       <AppScreen title={appTitles.notes} open={openApp === 'notes'} onBack={handleCloseApp}>
         <NotesApp notes={caseData.notes} />
