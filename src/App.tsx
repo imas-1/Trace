@@ -35,6 +35,8 @@ export default function App() {
       tutorialSeen: true,
       soundEnabled: save.soundEnabled,
       readThreadIds: [],
+      readGalleryIds: [],
+      callsSeen: false,
       updatedAt: Date.now()
     });
   }
