@@ -12,13 +12,16 @@ const emptySave: GameSaveState = {
   positions: {},
   tutorialSeen: false,
   soundEnabled: true,
+  readThreadIds: [],
   updatedAt: 0
 };
 
 function readLocal(): GameSaveState | null {
   try {
     const raw = localStorage.getItem(LOCAL_KEY);
-    return raw ? (JSON.parse(raw) as GameSaveState) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as GameSaveState;
+    return { ...parsed, readThreadIds: parsed.readThreadIds ?? [] };
   } catch {
     return null;
   }
@@ -28,7 +31,7 @@ function writeLocal(state: GameSaveState): void {
   try {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
   } catch {
-    // storage unavailable — ignore, in-memory state still works this session
+    // storage unavailable
   }
 }
 
@@ -36,16 +39,10 @@ function savePath(uid: string): string {
   return `saves/${uid}/cases/${CASE_ID}`;
 }
 
-/**
- * Loads/saves game progress. Always writes to localStorage immediately
- * (works fully offline, no Firebase needed to play), and additionally
- * syncs to Firebase Realtime Database in the background — keyed by an
- * anonymous auth uid, so progress follows the player across browser
- * restarts on the same device without any signup.
- */
 export function useGameSave() {
   const [save, setSave] = useState<GameSaveState>(() => readLocal() ?? emptySave);
   const [loaded, setLoaded] = useState(false);
+  const [cloudAvailable, setCloudAvailable] = useState(false);
   const uidRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -54,20 +51,21 @@ export function useGameSave() {
       const user = await ensureAnonymousUser();
       if (cancelled) return;
       uidRef.current = user?.uid ?? null;
+      if (!cancelled) setCloudAvailable(Boolean(rtdb && user));
 
       if (rtdb && user) {
         try {
           const snap = await get(ref(rtdb, savePath(user.uid)));
           if (!cancelled && snap.exists()) {
-            const remote = snap.val() as GameSaveState;
+            const remoteRaw = snap.val() as GameSaveState;
+            const remote: GameSaveState = { ...remoteRaw, readThreadIds: remoteRaw.readThreadIds ?? [] };
             const local = readLocal();
-            // last-write-wins between local and remote copies
             const winner = !local || remote.updatedAt > local.updatedAt ? remote : local;
             setSave(winner);
             writeLocal(winner);
           }
         } catch {
-          // offline or rules deny read — local save still applies
+          // offline or rules deny read
         }
       }
       if (!cancelled) setLoaded(true);
@@ -82,12 +80,9 @@ export function useGameSave() {
     setSave(next);
     writeLocal(next);
     if (rtdb && uidRef.current) {
-      void set(ref(rtdb, savePath(uidRef.current)), next).catch(() => {
-        // offline — localStorage already has it; RTDB SDK also queues writes
-        // internally and will retry once connectivity returns.
-      });
+      void set(ref(rtdb, savePath(uidRef.current)), next).catch(() => {});
     }
   }, []);
 
-  return { save, persist, loaded };
+  return { save, persist, loaded, cloudAvailable };
 }
