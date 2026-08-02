@@ -106,6 +106,8 @@ export interface GameSaveState {
   tutorialSeen: boolean;
   soundEnabled: boolean;
   readThreadIds: string[];
+  readGalleryIds: string[];
+  callsSeen: boolean;
   updatedAt: number;
 }
 
