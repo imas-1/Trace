@@ -16,9 +16,6 @@ interface Props {
 export function BoardApp({ items, endings, links, positions, onLinksChange, onPositionsChange, sound }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [ending, setEnding] = useState<CaseEnding | null>(null);
-  // Live position overrides while a pin is being dragged. Kept purely local
-  // (no parent callback, no persist/Firebase write) so dragging stays cheap;
-  // only the final position is committed to the save on pointer-up.
   const [dragPositions, setDragPositions] = useState<Record<string, BoardPosition>>({});
   const dragState = useRef<{ id: string; startX: number; startY: number; origin: BoardPosition; moved: boolean } | null>(null);
 
@@ -36,16 +33,12 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
     const dx = e.clientX - d.startX;
     const dy = e.clientY - d.startY;
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) d.moved = true;
-    // Local-only update while dragging — no save/network write per frame.
     setDragPositions((prev) => ({ ...prev, [d.id]: { x: d.origin.x + dx, y: d.origin.y + dy } }));
   }
   function handlePointerUp(item: BoardItem) {
     const d = dragState.current;
     dragState.current = null;
     if (d && d.moved) {
-      // Drag finished — commit the single final position to the save,
-      // then drop the local override (the parent's `positions` prop now
-      // carries the same value on the next render).
       const finalPos = dragPositions[d.id];
       if (finalPos) {
         onPositionsChange({ ...positions, [d.id]: finalPos });
@@ -60,9 +53,6 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
     }
   }
 
-  // Safety net: if progress gets reset externally (Settings → "Resetează
-  // progresul") while nothing is being dragged, drop any leftover local
-  // overrides so pins don't appear stuck at their pre-reset position.
   useEffect(() => {
     if (!dragState.current && Object.keys(positions).length === 0 && Object.keys(dragPositions).length > 0) {
       setDragPositions({});
@@ -96,20 +86,35 @@ export function BoardApp({ items, endings, links, positions, onLinksChange, onPo
     }
   }
 
+  function isKeyLink(link: BoardLink): boolean {
+    return endings.some((e) =>
+      e.requiredLinks?.some(
+        ([a, b]) => (a === link.a && b === link.b) || (a === link.b && b === link.a)
+      )
+    );
+  }
+
   function lineFor(link: BoardLink, idx: number) {
     const a = items.find((i) => i.id === link.a);
     const b = items.find((i) => i.id === link.b);
     if (!a || !b) return null;
     const pa = posOf(a.id, a);
     const pb = posOf(b.id, b);
-    // pin card is 118px wide; approximate center offset for a clean line anchor
     const ax = pa.x + 59, ay = pa.y + 24;
     const bx = pb.x + 59, by = pb.y + 24;
+    const key = isKeyLink(link);
     return (
       <g key={idx} className="pointer-events-auto cursor-pointer" onClick={() => removeLink(link)}>
-        {/* wide transparent line = easy tap target on mobile, without widening the visible thread */}
         <line x1={ax} y1={ay} x2={bx} y2={by} stroke="transparent" strokeWidth={16} />
-        <line x1={ax} y1={ay} x2={bx} y2={by} stroke="#e8763e" strokeWidth={1.6} opacity={0.8} />
+        <line
+          x1={ax}
+          y1={ay}
+          x2={bx}
+          y2={by}
+          stroke={key ? '#3ee8b5' : '#e8763e'}
+          strokeWidth={key ? 2 : 1.6}
+          opacity={key ? 0.95 : 0.7}
+        />
       </g>
     );
   }
