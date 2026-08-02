@@ -9,7 +9,7 @@ import { PhoneShell } from '@/components/PhoneShell';
 
 export default function App() {
   const { save, persist, loaded } = useGameSave();
-  const sound = useSound();
+  const sound = useSound(save.soundEnabled ?? true);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const scale = useFitScreen(titleRef);
 
@@ -25,6 +25,9 @@ export default function App() {
   function closeTutorial() {
     setTutorialVisible(false);
     if (!save.tutorialSeen) persist({ ...save, tutorialSeen: true, updatedAt: Date.now() });
+  }
+  function resetProgress() {
+    persist({ unlocked: false, links: [], positions: {}, tutorialSeen: true, soundEnabled: save.soundEnabled, updatedAt: Date.now() });
   }
 
   // Auto-show tutorial on first-ever visit, once the save has loaded
@@ -45,7 +48,7 @@ export default function App() {
         </h1>
         <div style={{ width: 340 * scale, height: 700 * scale }}>
           <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: 340, height: 700 }}>
-            <PhoneShell caseData={semnalPierdut} save={save} onSaveChange={persist} sound={sound} />
+            <PhoneShell caseData={semnalPierdut} save={save} onSaveChange={persist} onReset={resetProgress} sound={sound} />
           </div>
         </div>
       </div>
