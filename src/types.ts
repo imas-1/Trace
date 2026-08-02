@@ -91,7 +91,7 @@ export interface CaseData {
   endings: CaseEnding[];
 }
 
-export type AppId = 'messages' | 'gallery' | 'notes' | 'board' | 'maps' | 'calls';
+export type AppId = 'messages' | 'gallery' | 'notes' | 'board' | 'maps' | 'calls' | 'settings';
 
 export interface BoardPosition {
   x: number;
@@ -103,6 +103,7 @@ export interface GameSaveState {
   links: BoardLink[];
   positions: Record<string, BoardPosition>;
   tutorialSeen: boolean;
+  soundEnabled: boolean;
   updatedAt: number;
 }
 
