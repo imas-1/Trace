@@ -14,7 +14,7 @@ export function AppScreen({ title, open, onBack, children, bodyClassName }: Prop
     <motion.div
       className="absolute inset-0 z-[60] flex flex-col bg-[#0c0e13] pt-[46px]"
       animate={{ y: open ? '0%' : '100%' }}
-      transition={{ duration: 0.38, ease: [0.2, 0.8, 0.2, 1] }}
+      transition={{ type: 'spring', stiffness: 380, damping: 38, mass: 0.9 }}
       style={{ pointerEvents: open ? 'auto' : 'none' }}
     >
       <div className="flex items-center gap-2.5 border-b border-line px-[18px] pb-3.5 pt-2.5">
