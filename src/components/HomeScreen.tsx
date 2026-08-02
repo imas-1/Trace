@@ -14,15 +14,23 @@ const APPS: AppDef[] = [
   { id: 'notes', icon: '✎', label: 'Notițe', gradient: 'from-[#f5c451] to-[#c98a1c]' },
   { id: 'board', icon: '⚑', label: 'Board', gradient: 'from-warn to-[#8a3a1a]' },
   { id: 'maps', icon: '◎', label: 'Hărți', gradient: 'from-[#5bd0f0] to-[#1c7fa3]' },
-  { id: 'calls', icon: '☎', label: 'Apeluri', gradient: 'from-[#8f7bf0] to-[#4a3a9c]' }
+  { id: 'calls', icon: '☎', label: 'Apeluri', gradient: 'from-[#8f7bf0] to-[#4a3a9c]' },
+  { id: 'settings', icon: '⚙', label: 'Setări', gradient: 'from-[#7a8593] to-[#3c434c]' }
 ];
 
 interface Props {
   caseData: CaseData;
   onOpenApp: (id: AppId) => void;
+  linksCount: number;
 }
 
-export function HomeScreen({ caseData, onOpenApp }: Props) {
+export function HomeScreen({ caseData, onOpenApp, linksCount }: Props) {
+  // A rough completion signal: how many board pins are already tied into at
+  // least one connection, out of the total available. Gives the player a
+  // sense of "how much of the board is worked" beyond a raw link count.
+  const totalPins = caseData.board.length;
+  const progressPct = totalPins > 0 ? Math.min(100, Math.round((linksCount / totalPins) * 100)) : 0;
+
   return (
     <div
       className="absolute inset-0 z-20 pt-[70px]"
@@ -32,8 +40,21 @@ export function HomeScreen({ caseData, onOpenApp }: Props) {
       }}
     >
       <div className="mx-6 rounded-2xl border border-line bg-white/[0.03] p-3.5">
-        <div className="text-[10px] uppercase tracking-[0.14em] text-sub">Caz activ</div>
+        <div className="flex items-center justify-between">
+          <div className="text-[10px] uppercase tracking-[0.14em] text-sub">Caz activ</div>
+          {linksCount > 0 && (
+            <div className="rounded-full bg-accentDim/40 px-2 py-0.5 text-[10px] font-semibold text-accent">
+              {linksCount} conexiuni pe board
+            </div>
+          )}
+        </div>
         <div className="mt-1 text-[13px] leading-snug text-[#dfe4ea]">{caseData.intro.subtitle}</div>
+        <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-accent to-[#1a8f6e] transition-all duration-500"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
       </div>
 
       <div className="mt-[22px] grid grid-cols-3 gap-x-[18px] gap-y-[22px] px-6">
